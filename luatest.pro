@@ -5,7 +5,8 @@ CONFIG -= qt
 SOURCES += main.cpp \
     config.cpp \
     lobj.cpp \
-    nulldb.cpp
+    nulldb.cpp \
+    sandbox.cpp
 
 LIBS += -llua5.3-c++
 
@@ -18,7 +19,8 @@ HEADERS += \
     config.h \
     lobj.h \
     persistence.h \
-    nulldb.h
+    nulldb.h \
+    sandbox.h
 
 OTHER_FILES += config.lua
 

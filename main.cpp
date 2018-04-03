@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "nulldb.h"
+#include "sandbox.h"
 
 using namespace std;
 
@@ -26,42 +27,6 @@ bool compileAction(Logger &logger, const char* action, std::string *buffer)
     }
 
     lua_dump(L, bytecodeWriter, buffer, true);
-    lua_close(L);
-    return true;
-}
-
-bool runAction(Logger &logger, Persistence *persistence, std::string name)
-{
-    int status = 0;
-    std::string bytecode = persistence->getAction(name);
-    lua_State *L = luaL_newstate();
-    luaopen_base(L);
-
-    if ((status = luaL_loadbuffer(L, bytecode.c_str(), bytecode.size(), name.c_str())) != LUA_OK)
-    {
-        logger.error(lua_tostring(L, -1));
-        return false;
-    }
-
-    logger.info("Action `%s` loaded successfully", name.c_str());
-
-    // Priming: run the script to set up all global vars
-    if ((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)
-    {
-        logger.error(lua_tostring(L, -1));
-        return false;
-    }
-
-    // Push the main function on the stack
-    lua_getglobal(L, "main");
-
-    // Second call to actually run the main function
-    if ((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)
-    {
-        logger.error(lua_tostring(L, -1));
-        return false;
-    }
-
     lua_close(L);
     return true;
 }
@@ -94,7 +59,10 @@ int main()
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());
         persistence->addAction("hello", bytecode);
-        runAction(logger, persistence, "hello");
+
+        Sandbox sandbox;
+        sandbox.runAction(logger, "hello", bytecode);
+        logger.info("Instruction count: %d", sandbox.getInstructions());
     }
 
     delete persistence;
