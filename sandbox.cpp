@@ -1,24 +1,19 @@
 #include "sandbox.h"
 
+std::jmp_buf Sandbox::bail;
+
 Sandbox::Sandbox()
 {
     loadLibraries();
-    lua_sethook(L, hook, LUA_MASKCOUNT, 1);
+    lua_sethook(L, hook, LUA_MASKCOUNT, 100);
 }
 
-void Sandbox::incInstructions()
-{
-    this->instructionCounter++;
-}
-
-int Sandbox::getInstructions() const
-{
-    return this->instructionCounter;
-}
-
+// Kill the script if it exceeds 100 instructions
+// In C++ we can use throw instead of longjmp. This even
+// gets us out of pcalls
 void Sandbox::hook(lua_State *L, lua_Debug *ar)
 {
-    THIS(Sandbox)->incInstructions();
+    std::longjmp(Sandbox::bail, BAIL_TIMEOUT);
 }
 
 void Sandbox::loadLibraries()
@@ -74,6 +69,12 @@ bool Sandbox::runAction(Logger &logger, std::string name, std::string &bytecode)
     if((type = lua_getglobal(L, "main")) != LUA_TFUNCTION)
     {
         logger.error("Action `%s` does not have a `main` function", name.c_str());
+        return false;
+    }
+
+    if (setjmp(bail) > 0)
+    {
+        logger.error("Action `%s` ran for too long", name.c_str());
         return false;
     }
 

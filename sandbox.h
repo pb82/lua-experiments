@@ -1,6 +1,8 @@
 #ifndef SANDBOX_H
 #define SANDBOX_H
 
+#include <csetjmp>
+
 #include "lobj.h"
 #include "logger.h"
 
@@ -12,6 +14,7 @@
     lua_settable(L, -3);        \
     lua_pop(L, 1)
 
+#define BAIL_TIMEOUT 1
 
 class Sandbox : public LObj
 {
@@ -27,14 +30,6 @@ public:
      * successfully
      */  
     bool runAction(Logger &logger, std::string name, std::string &bytecode);
-
-    /**
-     * @brief getInstructions
-     * Return the value of the instruction counter
-     * @return Number of instructions executed
-     */
-    int getInstructions() const;
-
 private:
     /**
      * @brief loadLibraries Load liraries before running a script
@@ -52,12 +47,10 @@ private:
     static void hook(lua_State *L, lua_Debug *ar);
 
     /**
-     * @brief incInstructions
-     * Increase the instruction counter by one
+     * @brief bail Longump target
+     * Used to bail out of scripts that runu for too long
      */
-    void incInstructions();
-
-    int instructionCounter = 0;
+    static std::jmp_buf bail;
 };
 
 #endif // SANDBOX_H

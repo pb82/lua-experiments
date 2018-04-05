@@ -54,15 +54,14 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function main() print(os.clock()) end", &bytecode);
+    bool result = compileAction(logger, "function foo() for i=1,1000 do print('test') end end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());
         persistence->addAction("hello", bytecode);
 
-        Sandbox sandbox;
-        sandbox.runAction(logger, "hello", bytecode);
-        logger.info("Instruction count: %d", sandbox.getInstructions());
+        Sandbox s;
+        s.runAction(logger, "hello", bytecode);
     }
 
     delete persistence;
