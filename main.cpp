@@ -54,7 +54,7 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function main() print('Hello from lua') end", &bytecode);
+    bool result = compileAction(logger, "function main() print(os.clock()) end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());

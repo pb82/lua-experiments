@@ -2,6 +2,7 @@
 
 Sandbox::Sandbox()
 {
+    loadLibraries();
     lua_sethook(L, hook, LUA_MASKCOUNT, 1);
 }
 
@@ -20,10 +21,39 @@ void Sandbox::hook(lua_State *L, lua_Debug *ar)
     THIS(Sandbox)->incInstructions();
 }
 
+void Sandbox::loadLibraries()
+{
+    // Load safe libraries
+    luaL_requiref(L, LUA_GLOBAL,        luaopen_base,       true);
+    luaL_requiref(L, LUA_STRLIBNAME,    luaopen_string,     true);
+    luaL_requiref(L, LUA_MATHLIBNAME,   luaopen_math,       true);
+    luaL_requiref(L, LUA_UTF8LIBNAME,   luaopen_utf8,       true);
+    luaL_requiref(L, LUA_COLIBNAME,     luaopen_coroutine,  true);
+    luaL_requiref(L, LUA_TABLIBNAME,    luaopen_table,      true);
+
+    // The OS lib has some useful functions for data and time we
+    // want to retain these and only disable the dangerous ones
+    luaL_requiref(L, LUA_OSLIBNAME,     luaopen_os,         true);
+
+    // Disable unsafe functions
+    DISABLE_FN(LUA_GLOBAL,              "dofile");
+    DISABLE_FN(LUA_GLOBAL,              "collectgarbage");
+    DISABLE_FN(LUA_GLOBAL,              "load");
+    DISABLE_FN(LUA_GLOBAL,              "loadfile");
+    DISABLE_FN(LUA_GLOBAL,              "require");
+    DISABLE_FN(LUA_GLOBAL,              "module");
+    DISABLE_FN(LUA_GLOBAL,              "module");
+    DISABLE_FN(LUA_OSLIBNAME,           "execute");
+    DISABLE_FN(LUA_OSLIBNAME,           "exit");
+    DISABLE_FN(LUA_OSLIBNAME,           "getenv");
+    DISABLE_FN(LUA_OSLIBNAME,           "remove");
+    DISABLE_FN(LUA_OSLIBNAME,           "setlocale");
+    DISABLE_FN(LUA_OSLIBNAME,           "tmpname");
+}
+
 bool Sandbox::runAction(Logger &logger, std::string name, std::string &bytecode)
 {
-    int status;
-    luaopen_base(L);
+    int status, type;
 
     if ((status = luaL_loadbuffer(L, bytecode.c_str(), bytecode.size(), name.c_str())) != LUA_OK)
     {
@@ -41,7 +71,11 @@ bool Sandbox::runAction(Logger &logger, std::string name, std::string &bytecode)
     }
 
     // Push the main function on the stack
-    lua_getglobal(L, "main");
+    if((type = lua_getglobal(L, "main")) != LUA_TFUNCTION)
+    {
+        logger.error("Action `%s` does not have a `main` function", name.c_str());
+        return false;
+    }
 
     // Second call to actually run the main function
     if ((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)
