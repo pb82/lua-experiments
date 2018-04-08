@@ -40,9 +40,9 @@ void AsyncQueue::actionRun(uv_work_t *req)
     ActionBaton *action = (ActionBaton *) req->data;
     std::string bytecode = AsyncQueue::instance().persistence().getAction(action->name);
 
-    Sandbox s;
+    Sandbox sandbox;
     std::string message;
-    if(s.runAction(action->name, bytecode, &message) != Success)
+    if(sandbox.runAction(action->name, bytecode, &message) != Success)
     {
         AsyncQueue::instance().logger().error(message.c_str());
     }

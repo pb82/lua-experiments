@@ -4,7 +4,6 @@ CONFIG -= app_bundle
 CONFIG -= qt
 SOURCES += main.cpp \
     config.cpp \
-    lobj.cpp \
     nulldb.cpp \
     sandbox.cpp \
     asyncqueue.cpp
@@ -18,7 +17,6 @@ LIBS += -llua -luv
 HEADERS += \
     logger.h \
     config.h \
-    lobj.h \
     persistence.h \
     nulldb.h \
     sandbox.h \
