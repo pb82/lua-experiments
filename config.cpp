@@ -1,7 +1,20 @@
 #include "config.h"
 
+Config::Config()
+{
+    L = luaL_newstate();
+    SET_THIS;
+}
+
+Config::~Config()
+{
+    lua_close(L);
+}
+
 int Config::logger(lua_State *L)
 {
+    GET_THIS(Config, This);
+
     // Truncate to one argument and make sure its a table
     lua_settop(L, 1);
     luaL_checktype(L, 1, LUA_TTABLE);
@@ -13,7 +26,7 @@ int Config::logger(lua_State *L)
     lua_getfield(L, 1, "timestamp");
 
     // Remove the table
-    lua_remove(L, 1);
+    lua_remove(L, 1);    
 
     // Check the types of the items
     luaL_checktype(L, 1, LUA_TSTRING);
@@ -24,9 +37,9 @@ int Config::logger(lua_State *L)
     bool fancy = lua_toboolean(L, 2);
     const char *level = lua_tostring(L, 1);
 
-    THIS(Config)->setLogLevel(level);
-    THIS(Config)->setLogFancy(fancy);
-    THIS(Config)->setLogTimestamp(ts);
+    This->setLogLevel(level);
+    This->setLogFancy(fancy);
+    This->setLogTimestamp(ts);
 
     // Clear stack
     lua_settop(L, 0);
@@ -35,6 +48,8 @@ int Config::logger(lua_State *L)
 
 int Config::nulldb(lua_State *L)
 {
+    GET_THIS(Config, This);
+
     // Truncate to one argument and make sure its a table
     lua_settop(L, 1);
     luaL_checktype(L, 1, LUA_TTABLE);
@@ -46,12 +61,12 @@ int Config::nulldb(lua_State *L)
     lua_settop(L, 0);
 
     // Throw if another persistency type is already configured
-    if (THIS(Config)->getPersistenceType() != UNCONFIGURED)
+    if (This->getPersistenceType() != UNCONFIGURED)
     {
         luaL_error(L, "Only one persistence configuration allowed");
     }
 
-    THIS(Config)->setPersistenceType(NULLDB);
+    This->setPersistenceType(NULLDB);
     return 0;
 }
 

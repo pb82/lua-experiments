@@ -1,12 +1,14 @@
 #ifndef SANDBOX_H
 #define SANDBOX_H
 
+#include <string>
+#include <lua.hpp>
 #include <csetjmp>
 
-#include "lobj.h"
-#include "logger.h"
+#include "definitions.h"
 
 #define LUA_GLOBAL "_G"
+
 #define DISABLE_FN(TABLE, FN)   \
     lua_getglobal(L, TABLE);    \
     lua_pushstring(L, FN);      \
@@ -14,9 +16,21 @@
     lua_settable(L, -3);        \
     lua_pop(L, 1)
 
-#define BAIL_TIMEOUT 1
+/**
+ * @brief The RunCode enum
+ * Information about the state of script execution
+ */
+enum RunCode
+{
+    Success = 1,
+    ErrTimeout,
+    ErrBytecode,
+    ErrPriming,
+    ErrNoMain,
+    ErrMain
+};
 
-class Sandbox : public LObj
+class Sandbox
 {
 public:
     Sandbox();
@@ -26,10 +40,11 @@ public:
      * Run the given bytecode in a sandbox
      * @param name The name of the action for debug info
      * @param bytecode A string containing Lua bytecode
-     * @return A boolean indicating if the action was run
-     * successfully
+     * @return A code indicating if the action was run
+     * successfully and if not, provides information about the
+     * error
      */  
-    bool runAction(Logger &logger, std::string name, std::string &bytecode);
+    RunCode runAction(std::string name, std::string &bytecode, std::string *msg);
 private:
     /**
      * @brief loadLibraries Load liraries before running a script
@@ -44,13 +59,10 @@ private:
      * @param L Lua state pointer
      * @param ar Lua debug info
      */
-    static void hook(lua_State *L, lua_Debug *ar);
+    static void hook(lua_State *L, lua_Debug *);
 
-    /**
-     * @brief bail Longump target
-     * Used to bail out of scripts that runu for too long
-     */
-    static std::jmp_buf bail;
+    lua_State *L;
+    jmp_buf env;
 };
 
 #endif // SANDBOX_H

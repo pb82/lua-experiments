@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <map>
 
 #include "config.h"
 
@@ -50,8 +51,8 @@ public:
 
     void log(std::string color, std::string tag, const char *format, ...)
     {
-        using std::chrono::system_clock;
-
+        // Acuire a lock to prevent multiple threads from printing to
+        // stdout at the same time and mixing up the logs
         va_list argptr;
         va_start(argptr, format);
 
@@ -67,12 +68,11 @@ public:
             std::tm tm = *std::localtime(&t);
             std::cout << std::left << std::setw(10)
                       << std::put_time(&tm, "%D %T ");
-            std::cout << ANSI_RESET;
         }
 
         // Format the rest of the arguments
         std::vprintf(format, argptr);
-        std::cout << std::endl;
+        std::cout << std::endl << std::flush;
         va_end(argptr);
     }
 
@@ -81,9 +81,10 @@ public:
     LOG_FN(warn,    "Warn",    ANSI_COLOR_YELLOW,  LogLevel["WARN"])
     LOG_FN(debug,   "Debug",   ANSI_COLOR_BLUE,    LogLevel["DEBUG"])
 
-    private:
-        int level;
-        bool fancy;
-        bool timestamp;
+private:
+    int level;
+    bool fancy;
+    bool timestamp;
 };
+
 #endif // LOGGER_H

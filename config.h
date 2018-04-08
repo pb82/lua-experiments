@@ -3,8 +3,9 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <lua.hpp>
 
-#include "lobj.h"
+#include "definitions.h"
 
 #define CONFIG_FILE "./config.lua"
 
@@ -37,10 +38,11 @@ public:
  * Load the configuration script and holds all configuration values
  * for other modules to use
  */
-class Config : public LObj
+class Config
 {
 public:
-    Config() { }
+    Config();
+    ~Config();
     /**
      * @brief loadConfig Loads and executes the configuration script
      */
@@ -85,6 +87,8 @@ private:
 
     // Persistence config
     PersistenceType persistenceType = UNCONFIGURED;
+
+    lua_State *L;
 };
 
 #endif // CONFIG_H

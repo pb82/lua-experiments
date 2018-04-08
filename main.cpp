@@ -1,9 +1,8 @@
 #include <iostream>
-#include "logger.h"
 
-#include "config.h"
+#include "logger.h"
 #include "nulldb.h"
-#include "sandbox.h"
+#include "asyncqueue.h"
 
 using namespace std;
 
@@ -54,16 +53,23 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function foo() for i=1,1000 do print('test') end end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
+    bool result = compileAction(logger, "function foo() for i=1,10 do __ENV=50 end end\n function main() if pcall(foo) then print(__ENV) else print('error') end end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());
         persistence->addAction("hello", bytecode);
-
-        Sandbox s;
-        s.runAction(logger, "hello", bytecode);
     }
 
+    AsyncQueue::instance().setLogger(&logger);
+    AsyncQueue::instance().setPersistence(persistence);
+
+    ActionBaton *action = new ActionBaton("hello");
+    ActionBaton *action2 = new ActionBaton("hello");
+
+    AsyncQueue::instance().submit(action);
+    AsyncQueue::instance().submit(action2);
+
+    AsyncQueue::instance().run();
     delete persistence;
     return 0;
 }

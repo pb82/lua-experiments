@@ -6,9 +6,10 @@ SOURCES += main.cpp \
     config.cpp \
     lobj.cpp \
     nulldb.cpp \
-    sandbox.cpp
+    sandbox.cpp \
+    asyncqueue.cpp
 
-LIBS += -llua5.3-c++
+LIBS += -llua -luv
 
 # unix:!macx: LIBS += -L$$PWD/../../../../usr/local/lib/ -lluajit-5.1
 # INCLUDEPATH += $$PWD/../../../../usr/local/include/luajit-2.0
@@ -20,7 +21,9 @@ HEADERS += \
     lobj.h \
     persistence.h \
     nulldb.h \
-    sandbox.h
+    sandbox.h \
+    asyncqueue.h \
+    definitions.h
 
 OTHER_FILES += config.lua
 

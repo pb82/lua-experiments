@@ -1,19 +1,21 @@
 #include "sandbox.h"
 
-std::jmp_buf Sandbox::bail;
-
 Sandbox::Sandbox()
 {
+    L = luaL_newstate();
     loadLibraries();
-    lua_sethook(L, hook, LUA_MASKCOUNT, 100);
+
+    // Set up the pointers
+    SET_THIS;
+    SET_ENV;
+
+    lua_sethook(L, hook, LUA_MASKCOUNT, 100000);
 }
 
-// Kill the script if it exceeds 100 instructions
-// In C++ we can use throw instead of longjmp. This even
-// gets us out of pcalls
-void Sandbox::hook(lua_State *L, lua_Debug *ar)
+void Sandbox::hook(lua_State *L, lua_Debug *)
 {
-    std::longjmp(Sandbox::bail, BAIL_TIMEOUT);
+    GET_ENV(env);
+    std::longjmp(*env, ErrTimeout);
 }
 
 void Sandbox::loadLibraries()
@@ -46,44 +48,44 @@ void Sandbox::loadLibraries()
     DISABLE_FN(LUA_OSLIBNAME,           "tmpname");
 }
 
-bool Sandbox::runAction(Logger &logger, std::string name, std::string &bytecode)
+RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string *msg)
 {
     int status, type;
 
     if ((status = luaL_loadbuffer(L, bytecode.c_str(), bytecode.size(), name.c_str())) != LUA_OK)
     {
-        logger.error(lua_tostring(L, -1));
-        return false;
+        *msg = lua_tostring(L, -1);
+        return ErrBytecode;
     }
-
-    logger.info("Action `%s` loaded successfully", name.c_str());
 
     // Priming: run the script to set up all global vars
     if ((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)
     {
-        logger.error(lua_tostring(L, -1));
-        return false;
+        *msg = lua_tostring(L, -1);
+        return ErrPriming;
     }
 
     // Push the main function on the stack
     if((type = lua_getglobal(L, "main")) != LUA_TFUNCTION)
     {
-        logger.error("Action `%s` does not have a `main` function", name.c_str());
-        return false;
+        *msg = lua_tostring(L, -1);
+        return ErrNoMain;
     }
 
-    if (setjmp(bail) > 0)
+    if (setjmp(env) > 0)
     {
-        logger.error("Action `%s` ran for too long", name.c_str());
-        return false;
+        *msg = "Action `";
+        msg->append(name);
+        msg->append("` aborted after timeout");
+        return ErrTimeout;
     }
 
     // Second call to actually run the main function
     if ((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)
     {
-        logger.error(lua_tostring(L, -1));
-        return false;
+        *msg = lua_tostring(L, -1);
+        return ErrMain;
     }
 
-    return true;
+    return Success;
 }
