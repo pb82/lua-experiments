@@ -8,14 +8,23 @@ Sandbox::Sandbox()
     // Set up the pointers
     SET_THIS;
     SET_ENV;
-
-    lua_sethook(L, hook, LUA_MASKCOUNT, 100000);
 }
 
 void Sandbox::hook(lua_State *L, lua_Debug *)
 {
     GET_ENV(env);
-    std::longjmp(*env, ErrTimeout);
+    GET_THIS(Sandbox, This);
+    UPDATE_MS(This, running);
+
+    if (This->mslimit > 0 && This->running >= This->mslimit)
+    {
+        std::longjmp(*env, ErrTimeout);
+    }
+
+    if (This->kblimit > 0 && lua_gc(L, LUA_GCCOUNT, 0) >= This->kblimit)
+    {
+        std::longjmp(*env, ErrMemory);
+    }
 }
 
 void Sandbox::loadLibraries()
@@ -52,6 +61,15 @@ RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string 
 {
     int status, type;
 
+    // Using hooks will have a performance impact. Only use them
+    // if a constraint (time or memory) is actually set.
+    if (mslimit > 0 || kblimit > 0)
+    {
+        // Init time tracking
+        UPDATE_MS(this, started);
+        lua_sethook(L, hook, LUA_MASKCOUNT, GRANULARITY);
+    }
+
     if ((status = luaL_loadbuffer(L, bytecode.c_str(), bytecode.size(), name.c_str())) != LUA_OK)
     {
         *msg = lua_tostring(L, -1);
@@ -72,12 +90,24 @@ RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string 
         return ErrNoMain;
     }
 
-    if (setjmp(env) > 0)
+    int error = setjmp(env);
+    switch(error)
     {
+    case 0:
+        break;
+    case ErrTimeout:
         *msg = "Action `";
         msg->append(name);
         msg->append("` aborted after timeout");
         return ErrTimeout;
+    case ErrMemory:
+        *msg = "Action `";
+        msg->append(name);
+        msg->append("` aborted after violating memory constraints");
+        return ErrMemory;
+    default:
+        *msg = "Unknown error";
+        return ErrUnknown;
     }
 
     // Second call to actually run the main function

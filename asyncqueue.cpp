@@ -40,7 +40,10 @@ void AsyncQueue::actionRun(uv_work_t *req)
     ActionBaton *action = (ActionBaton *) req->data;
     std::string bytecode = AsyncQueue::instance().persistence().getAction(action->name);
 
-    Sandbox sandbox;
+    Sandbox sandbox;    
+    sandbox.mslimit = action->timeout;
+    sandbox.kblimit = action->maxmem;
+
     std::string message;
     if(sandbox.runAction(action->name, bytecode, &message) != Success)
     {

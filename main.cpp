@@ -53,7 +53,7 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function foo() for i=1,10 do __ENV=50 end end\n function main() if pcall(foo) then print(__ENV) else print('error') end end", &bytecode);
+    bool result = compileAction(logger, "function foo() a={}; table.insert(a, 'test') end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());
@@ -63,11 +63,18 @@ int main()
     AsyncQueue::instance().setLogger(&logger);
     AsyncQueue::instance().setPersistence(persistence);
 
-    ActionBaton *action = new ActionBaton("hello");
-    ActionBaton *action2 = new ActionBaton("hello");
+    // Stress testing
+    for (int i = 0; i < 1; i++)
+    {
+        ActionBaton *act = new ActionBaton("hello");
+        // Script needs to finish in 1 second or be killed
+        act->timeout = 1000;
 
-    AsyncQueue::instance().submit(action);
-    AsyncQueue::instance().submit(action2);
+        // Script cannot use more than 100 kilobytes
+        act->maxmem = 100;
+
+        AsyncQueue::instance().submit(act);
+    }
 
     AsyncQueue::instance().run();
     delete persistence;

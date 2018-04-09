@@ -21,6 +21,8 @@ public:
 
     uv_work_t req;
     std::string name;
+    long timeout = 0;
+    int maxmem = 0;
 };
 
 class AsyncQueue
