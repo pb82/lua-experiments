@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "nulldb.h"
 #include "asyncqueue.h"
+#include "pluginregistry.h"
 
 using namespace std;
 
@@ -53,12 +54,14 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function foo() a={}; table.insert(a, 'test') end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
+    bool result = compileAction(logger, "function foo() a={}; while true do table.insert(a, 'test') end end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());
         persistence->addAction("hello", bytecode);
     }
+
+    PluginRegistry registry(&logger);
 
     AsyncQueue::instance().setLogger(&logger);
     AsyncQueue::instance().setPersistence(persistence);
@@ -71,12 +74,12 @@ int main()
         act->timeout = 1000;
 
         // Script cannot use more than 100 kilobytes
-        act->maxmem = 100;
+        act->maxmem = 1;
 
         AsyncQueue::instance().submit(act);
     }
 
-    AsyncQueue::instance().run();
+    AsyncQueue::instance().run();    
     delete persistence;
     return 0;
 }

@@ -32,6 +32,12 @@ void AsyncQueue::submit(ActionBaton *job)
 void AsyncQueue::actionCleanup(uv_work_t *req, int status)
 {
     ActionBaton *action = (ActionBaton *) req->data;
+
+    if (action->code != Success)
+    {
+        AsyncQueue::instance().logger().error(action->msg.c_str());
+    }
+
     delete action;
 }
 
@@ -40,15 +46,11 @@ void AsyncQueue::actionRun(uv_work_t *req)
     ActionBaton *action = (ActionBaton *) req->data;
     std::string bytecode = AsyncQueue::instance().persistence().getAction(action->name);
 
-    Sandbox sandbox;    
+    Sandbox sandbox;
     sandbox.mslimit = action->timeout;
     sandbox.kblimit = action->maxmem;
-
-    std::string message;
-    if(sandbox.runAction(action->name, bytecode, &message) != Success)
-    {
-        AsyncQueue::instance().logger().error(message.c_str());
-    }
+    RunCode result = sandbox.runAction(action->name, bytecode, &action->msg);
+    action->code = result;
 }
 
 void AsyncQueue::idleCallback(uv_idle_t *t)

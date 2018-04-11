@@ -6,7 +6,8 @@ SOURCES += main.cpp \
     config.cpp \
     nulldb.cpp \
     sandbox.cpp \
-    asyncqueue.cpp
+    asyncqueue.cpp \    
+    pluginregistry.cpp
 
 LIBS += -llua -luv
 
@@ -21,8 +22,10 @@ HEADERS += \
     nulldb.h \
     sandbox.h \
     asyncqueue.h \
-    definitions.h
+    definitions.h \
+    pluginregistry.h
 
-OTHER_FILES += config.lua
+OTHER_FILES += config.lua \
+    libs/skeleton/skeleton.c
 
 QMAKE_POST_LINK += $$quote(cp $${PWD}/*.lua $${OUT_PWD})
