@@ -10,6 +10,11 @@ public:
     {
         std::cout << "Config value: " << config["value"].as<int>() << std::endl;
     }
+
+    std::string name()
+    {
+        return "skeleton";
+    }
 };
 
 extern "C" Plugin *create()

@@ -7,6 +7,7 @@ class Plugin
 {
 public:
     virtual ~Plugin() { }
+    virtual std::string name() = 0;
     virtual void setup(JSON::Object &config) = 0;
 };
 

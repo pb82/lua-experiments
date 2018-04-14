@@ -1,7 +1,9 @@
 #include "pluginregistry.h"
 
 
-PluginRegistry::PluginRegistry(Logger *logger) : logger(logger)
+PluginRegistry::PluginRegistry(Logger *logger, Config *config)
+  : logger(logger)
+  , config(config)
 {
     logger->info("Loading plugins");
     loadPlugins();
@@ -23,10 +25,6 @@ void PluginRegistry::loadPlugins()
     }
 
     Plugin *plugin = create();
-    JSON::Object config {
-        { "value", 42 }
-    };
-
-    plugin->setup(config);
+    plugin->setup(config->getPluginConfig(plugin->name()));
     delete plugin;
 }

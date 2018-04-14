@@ -61,7 +61,7 @@ int main()
         persistence->addAction("hello", bytecode);
     }
 
-    PluginRegistry registry(&logger);
+    PluginRegistry registry(&logger, &config);
 
     AsyncQueue::instance().setLogger(&logger);
     AsyncQueue::instance().setPersistence(persistence);

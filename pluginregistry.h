@@ -16,11 +16,12 @@ class PluginRegistry
 {
 public:
 
-    PluginRegistry(Logger *logger);
+    PluginRegistry(Logger *logger, Config *config);
 
 private:
     void loadPlugins();
     Logger *logger;
+    Config *config;
 };
 
 #endif // PLUGINREGISTRY_H

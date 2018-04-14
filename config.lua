@@ -11,8 +11,5 @@ Nulldb {
 }
 
 Plugin "skeleton" {
-    arr={
-        [1]="a",
-        [2]="b"
-    }
+    value=33
 }

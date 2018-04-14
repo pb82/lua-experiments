@@ -89,7 +89,7 @@ int Config::plugin(lua_State *L)
 
 int Config::pcdata(lua_State *L)
 {
-    // GET_THIS(Config, This);
+    GET_THIS(Config, This);
 
     // Truncate to one argument and make sure its a table
     lua_settop(L, 1);
@@ -97,10 +97,7 @@ int Config::pcdata(lua_State *L)
 
     JSON::Object data;
     LuaTools::readObject(L, data, 1);
-
-    JSON::PrettyPrinter printer;
-    std::cout << printer.print(data) << std::endl;
-
+    This->pluginConfig[This->currentPlugin] = data;
     return 0;
 }
 
@@ -164,4 +161,9 @@ void Config::setPersistenceType(PersistenceType type)
 PersistenceType Config::getPersistenceType()
 {
     return persistenceType;
+}
+
+JSON::Object& Config::getPluginConfig(std::string &&plugin)
+{
+    return pluginConfig[plugin];
 }
