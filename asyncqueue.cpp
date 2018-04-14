@@ -29,7 +29,7 @@ void AsyncQueue::submit(ActionBaton *job)
     uv_queue_work(loop, &job->req, actionRun, actionCleanup);
 }
 
-void AsyncQueue::actionCleanup(uv_work_t *req, int status)
+void AsyncQueue::actionCleanup(uv_work_t *req, int)
 {
     ActionBaton *action = (ActionBaton *) req->data;
 
@@ -53,7 +53,7 @@ void AsyncQueue::actionRun(uv_work_t *req)
     action->code = result;
 }
 
-void AsyncQueue::idleCallback(uv_idle_t *t)
+void AsyncQueue::idleCallback(uv_idle_t *)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     AsyncQueue::counter++;

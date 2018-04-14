@@ -57,7 +57,7 @@ private:
     uv_loop_t *loop;
 
     static void idleCallback(uv_idle_t*);
-    static void actionCleanup(uv_work_t *req, int status);
+    static void actionCleanup(uv_work_t *req, int);
     static void actionRun(uv_work_t *req);
     static int counter;
 };

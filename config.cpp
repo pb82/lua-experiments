@@ -3,7 +3,7 @@
 Config::Config()
 {
     L = luaL_newstate();
-    SET_THIS;
+    SET_THIS;       
 }
 
 Config::~Config()
@@ -70,6 +70,59 @@ int Config::nulldb(lua_State *L)
     return 0;
 }
 
+int Config::plugin(lua_State *L)
+{
+    GET_THIS(Config, This);
+
+    // Truncate to one argument and make sure its a table
+    lua_settop(L, 1);
+    luaL_checktype(L, 1, LUA_TSTRING);
+
+    const char *plugin = lua_tostring(L, 1);
+    This->currentPlugin = plugin;
+
+    lua_remove(L, 1);
+    lua_pushcfunction(L, Config::pcdata);
+
+    return 1;
+}
+
+int Config::pcdata(lua_State *L)
+{
+    // GET_THIS(Config, This);
+
+    // Truncate to one argument and make sure its a table
+    lua_settop(L, 1);
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    JSON::Object data;
+    lua_pushnil(L);
+    while (lua_next(L, 1))
+    {
+        const char *key = lua_tostring(L, -2);
+        switch(lua_type(L, -1))
+        {
+        case LUA_TNUMBER:
+            data[key] = lua_tonumber(L, -1);
+            break;
+        case LUA_TSTRING:
+            data[key] = lua_tostring(L, -1);
+            break;
+        case LUA_TBOOLEAN:
+            data[key] = (bool) lua_toboolean(L, -1);
+            break;
+        default:
+            luaL_error(L, "Invalid config type");
+        }
+        lua_pop(L, 1);
+    }
+
+    JSON::PrettyPrinter printer;
+    std::cout << printer.print(data) << std::endl;
+
+    return 0;
+}
+
 void Config::loadConfig()
 {
     int status = 0;
@@ -83,6 +136,7 @@ void Config::loadConfig()
     // Register config callbacks
     lua_register(L, "Logger", &logger);
     lua_register(L, "Nulldb", &nulldb);
+    lua_register(L, "Plugin", &plugin);
 
     // Run the config script
     if((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)

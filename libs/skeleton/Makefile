@@ -1,2 +1,2 @@
 all:
-	gcc -shared skeleton.c -o skeleton.so
+	g++ -shared -fPIC skeleton.cpp -o skeleton.so

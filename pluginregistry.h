@@ -6,15 +6,11 @@
 #include <cstring>
 
 #include "logger.h"
+#include "plugin.h"
+
 #define SKELETON_PLUGIN_PATH "./skeleton.so"
 
-typedef void (*PluginSetup)(void**);
-typedef void (*PluginDestroy)(void**);
-
-static void registerPlugin(const char* name)
-{
-
-}
+typedef Plugin *(*PluginCreate)();
 
 class PluginRegistry
 {

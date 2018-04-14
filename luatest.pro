@@ -9,6 +9,7 @@ SOURCES += main.cpp \
     asyncqueue.cpp \    
     pluginregistry.cpp
 
+
 LIBS += -llua -luv
 
 # unix:!macx: LIBS += -L$$PWD/../../../../usr/local/lib/ -lluajit-5.1
@@ -23,9 +24,13 @@ HEADERS += \
     sandbox.h \
     asyncqueue.h \
     definitions.h \
-    pluginregistry.h
+    pluginregistry.h \
+    json/Value.hpp \
+    json/PrettyPrinter.hpp \
+    json/Printer.hpp \
+    plugin.h
 
 OTHER_FILES += config.lua \
-    libs/skeleton/skeleton.c
+    libs/skeleton/skeleton.cpp
 
 QMAKE_POST_LINK += $$quote(cp $${PWD}/*.lua $${OUT_PWD})

@@ -9,24 +9,24 @@ PluginRegistry::PluginRegistry(Logger *logger) : logger(logger)
 
 void PluginRegistry::loadPlugins()
 {
+    int status = 0;
     uv_lib_t *lib = (uv_lib_t *) malloc(sizeof(uv_lib_t));
-    uv_dlopen(SKELETON_PLUGIN_PATH, lib);
+    status = uv_dlopen(SKELETON_PLUGIN_PATH, lib);
 
-    int status;
-    const char* pluginName;
-    status = uv_dlsym(lib, "pluginName", (void **) &pluginName);
-    logger->info("Loaded plugin: %s (%d)", pluginName, status);
+    PluginCreate create;
+    status = uv_dlsym(lib, "create", (void **) &create);
+    const char *err = uv_dlerror(lib);
 
-    PluginSetup setup;
-    status = uv_dlsym(lib, "setup", (void**) &setup);
-    void *handle;
-    setup(&handle);
+    if (status < 0) {
+        logger->error(err);
+        exit(1);
+    }
 
-    logger->info("Plugin value: %d (%d)", *((int *) handle), status);
+    Plugin *plugin = create();
+    JSON::Object config {
+        { "value", 42 }
+    };
 
-    PluginDestroy destroy;
-    status = uv_dlsym(lib, "destroy", (void**) &destroy);
-    destroy(&handle);
-
-    logger->info("Plugin destroyed: %d", status);
+    plugin->setup(config);
+    delete plugin;
 }

@@ -10,3 +10,9 @@ Nulldb {
     -- Suitable for development. Needs no configuration.
 }
 
+Plugin "skeleton" {
+    value=42,
+    test="asdf",
+    test2=true,
+    test3=false
+}

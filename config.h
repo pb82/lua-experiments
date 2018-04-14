@@ -6,6 +6,7 @@
 #include <lua.hpp>
 
 #include "definitions.h"
+#include "json/PrettyPrinter.hpp"
 
 #define CONFIG_FILE "./config.lua"
 
@@ -63,6 +64,9 @@ public:
      */
     static int nulldb(lua_State *L);
 
+    static int plugin(lua_State *L);
+    static int pcdata(lua_State *L);
+
     // Get/Set log level
     void setLogLevel(const char *level);
     std::string& getLogLevel();
@@ -87,6 +91,9 @@ private:
 
     // Persistence config
     PersistenceType persistenceType = UNCONFIGURED;
+
+    // Plugin config
+    std::string currentPlugin = "";
 
     lua_State *L;
 };
