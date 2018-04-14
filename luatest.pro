@@ -7,7 +7,8 @@ SOURCES += main.cpp \
     nulldb.cpp \
     sandbox.cpp \
     asyncqueue.cpp \    
-    pluginregistry.cpp
+    pluginregistry.cpp \
+    luatools.cpp
 
 
 LIBS += -llua -luv
@@ -28,7 +29,8 @@ HEADERS += \
     json/Value.hpp \
     json/PrettyPrinter.hpp \
     json/Printer.hpp \
-    plugin.h
+    plugin.h \
+    luatools.h
 
 OTHER_FILES += config.lua \
     libs/skeleton/skeleton.cpp

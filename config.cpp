@@ -96,26 +96,7 @@ int Config::pcdata(lua_State *L)
     luaL_checktype(L, 1, LUA_TTABLE);
 
     JSON::Object data;
-    lua_pushnil(L);
-    while (lua_next(L, 1))
-    {
-        const char *key = lua_tostring(L, -2);
-        switch(lua_type(L, -1))
-        {
-        case LUA_TNUMBER:
-            data[key] = lua_tonumber(L, -1);
-            break;
-        case LUA_TSTRING:
-            data[key] = lua_tostring(L, -1);
-            break;
-        case LUA_TBOOLEAN:
-            data[key] = (bool) lua_toboolean(L, -1);
-            break;
-        default:
-            luaL_error(L, "Invalid config type");
-        }
-        lua_pop(L, 1);
-    }
+    LuaTools::readObject(L, data, 1);
 
     JSON::PrettyPrinter printer;
     std::cout << printer.print(data) << std::endl;

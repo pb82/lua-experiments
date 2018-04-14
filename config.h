@@ -7,6 +7,7 @@
 
 #include "definitions.h"
 #include "json/PrettyPrinter.hpp"
+#include "luatools.h"
 
 #define CONFIG_FILE "./config.lua"
 

@@ -11,8 +11,8 @@ Nulldb {
 }
 
 Plugin "skeleton" {
-    value=42,
-    test="asdf",
-    test2=true,
-    test3=false
+    arr={
+        [1]="a",
+        [2]="b"
+    }
 }
