@@ -85,7 +85,7 @@ public:
     PersistenceType getPersistenceType();
 
     // Get config for a specific plugin
-    JSON::Object& getPluginConfig(std::string &&plugin);
+    JSON::Value &getPluginConfig(std::string &&plugin);
 private:
     // Logger config
     std::string logLevel = "info";
@@ -97,7 +97,7 @@ private:
 
     // Plugin config
     std::string currentPlugin = "";
-    std::map<std::string, JSON::Object> pluginConfig;
+    std::map<std::string, JSON::Value> pluginConfig;
 
     lua_State *L;
 };

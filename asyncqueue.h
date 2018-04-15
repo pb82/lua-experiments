@@ -20,6 +20,7 @@ public:
     }
 
     uv_work_t req;
+    PluginRegistry *registry;
 
     std::string name;
     long timeout = 0;
@@ -59,7 +60,6 @@ private:
     static void idleCallback(uv_idle_t*);
     static void actionCleanup(uv_work_t *req, int);
     static void actionRun(uv_work_t *req);
-    static int counter;
 };
 
 #endif // ASYNCQUEUE_H

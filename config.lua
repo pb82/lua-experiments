@@ -11,5 +11,9 @@ Nulldb {
 }
 
 Plugin "skeleton" {
-    value=33
+    value = 33,
+    a = 33,
+    id = {
+        ["$gt"] = 10
+    }
 }

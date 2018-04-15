@@ -3,6 +3,7 @@
 Sandbox::Sandbox()
 {
     L = luaL_newstate();
+    uv_rwlock_init(&lock);
     loadLibraries();
 
     // Set up the pointers
@@ -55,6 +56,34 @@ void Sandbox::loadLibraries()
     DISABLE_FN(LUA_OSLIBNAME,           "remove");
     DISABLE_FN(LUA_OSLIBNAME,           "setlocale");
     DISABLE_FN(LUA_OSLIBNAME,           "tmpname");
+
+    // Export the plugin call function
+    lua_register(L, "call", Sandbox::callPlugin);
+}
+
+int Sandbox::callPlugin(lua_State *L)
+{
+    GET_THIS(Sandbox, This);
+    uv_rwlock_wrlock(&This->lock);
+
+    lua_settop(L, 3);
+    luaL_checktype(L, 1, LUA_TSTRING);
+
+    std::string plname = lua_tostring(L, 1);
+    std::string action = lua_tostring(L, 2);
+
+    JSON::Value payload;
+    LuaTools::readObject(L, payload, 3);
+
+    if(This->registry)
+    {
+        plugin_ptr plugin = This->registry->getPlugin(plname.c_str());
+        JSON::Value result = plugin->call(action, payload);
+        LuaTools::writeValue(L, result);
+    }
+
+    uv_rwlock_rdunlock(&This->lock);
+    return 1;
 }
 
 RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string *msg)

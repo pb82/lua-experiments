@@ -95,8 +95,9 @@ int Config::pcdata(lua_State *L)
     lua_settop(L, 1);
     luaL_checktype(L, 1, LUA_TTABLE);
 
-    JSON::Object data;
-    LuaTools::readObject(L, data, 1);
+    JSON::Value data;
+    LuaTools::readValue(L, data);
+
     This->pluginConfig[This->currentPlugin] = data;
     return 0;
 }
@@ -163,7 +164,7 @@ PersistenceType Config::getPersistenceType()
     return persistenceType;
 }
 
-JSON::Object& Config::getPluginConfig(std::string &&plugin)
+JSON::Value& Config::getPluginConfig(std::string &&plugin)
 {
     return pluginConfig[plugin];
 }

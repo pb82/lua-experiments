@@ -1,7 +1,5 @@
 #include "asyncqueue.h"
 
-int AsyncQueue::counter = 0;
-
 AsyncQueue& AsyncQueue::instance()
 {
     static AsyncQueue instance;
@@ -47,6 +45,7 @@ void AsyncQueue::actionRun(uv_work_t *req)
     std::string bytecode = AsyncQueue::instance().persistence().getAction(action->name);
 
     Sandbox sandbox;
+    sandbox.registry = action->registry;
     sandbox.mslimit = action->timeout;
     sandbox.kblimit = action->maxmem;
     RunCode result = sandbox.runAction(action->name, bytecode, &action->msg);
@@ -56,7 +55,6 @@ void AsyncQueue::actionRun(uv_work_t *req)
 void AsyncQueue::idleCallback(uv_idle_t *)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    AsyncQueue::counter++;
 }
 
 void AsyncQueue::setLogger(Logger *logger)

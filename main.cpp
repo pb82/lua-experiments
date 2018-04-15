@@ -54,7 +54,7 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function foo() a={}; while true do table.insert(a, 'test') end end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
+    bool result = compileAction(logger, "function foo() a={}; local r = call('skeleton','add',{a=12}); print('result: ', r); end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());
@@ -70,16 +70,19 @@ int main()
     for (int i = 0; i < 1; i++)
     {
         ActionBaton *act = new ActionBaton("hello");
+        act->registry = &registry;
+
         // Script needs to finish in 1 second or be killed
         act->timeout = 1000;
 
         // Script cannot use more than 100 kilobytes
-        act->maxmem = 1;
+        act->maxmem = 10;
 
         AsyncQueue::instance().submit(act);
     }
 
     AsyncQueue::instance().run();    
+
     delete persistence;
     return 0;
 }

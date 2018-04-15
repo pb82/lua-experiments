@@ -175,7 +175,7 @@ namespace JSON {
             // Bool -> Number
             return std::get<JSON_BOOL>(value) ? 1 : 0;
         default:
-            throw(std::runtime_error("Invalid conversion to double"));
+            throw(std::runtime_error("Invalid conversion to number"));
         }
     }
     

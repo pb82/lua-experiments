@@ -7,8 +7,10 @@
 #include <iostream>
 
 #include <lua.hpp>
+#include <uv.h>
 
 #include "definitions.h"
+#include "pluginregistry.h"
 
 #define LUA_GLOBAL "_G"
 #define GRANULARITY 100000
@@ -75,6 +77,8 @@ public:
      */
     long mslimit = 0;
     int kblimit = 0;
+
+    PluginRegistry *registry;
 private:
     /**
      * @brief loadLibraries Load liraries before running a script
@@ -91,8 +95,11 @@ private:
      */
     static void hook(lua_State *L, lua_Debug *);
 
+    static int callPlugin(lua_State *L);
+
     lua_State *L;
-    jmp_buf env;    
+    jmp_buf env;
+    uv_rwlock_t lock;
 };
 
 #endif // SANDBOX_H

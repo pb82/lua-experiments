@@ -8,7 +8,8 @@ class Plugin
 public:
     virtual ~Plugin() { }
     virtual std::string name() = 0;
-    virtual void setup(JSON::Object &config) = 0;
+    virtual void setup(JSON::Value &config) = 0;
+    virtual JSON::Value call(const std::string& action, JSON::Value& payload) = 0;
 };
 
 #endif // PLUGIN_H
