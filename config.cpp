@@ -164,7 +164,17 @@ PersistenceType Config::getPersistenceType()
     return persistenceType;
 }
 
-JSON::Value& Config::getPluginConfig(std::string &&plugin)
-{
+JSON::Value& Config::getPluginConfig(std::string plugin)
+{    
     return pluginConfig[plugin];
+}
+
+std::vector<std::string> Config::getConfiguredPlugins()
+{
+    std::vector<std::string> result;
+    for (auto const& pair : pluginConfig)
+    {
+        result.push_back(pair.first);
+    }
+    return result;
 }

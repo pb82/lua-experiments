@@ -8,10 +8,12 @@ SOURCES += main.cpp \
     sandbox.cpp \
     asyncqueue.cpp \    
     pluginregistry.cpp \
-    luatools.cpp
+    luatools.cpp \
+    web/mongoose.c \
+    httpserver.cpp
 
 
-LIBS += -llua -luv
+LIBS += -llua -luv -pthread
 
 # unix:!macx: LIBS += -L$$PWD/../../../../usr/local/lib/ -lluajit-5.1
 # INCLUDEPATH += $$PWD/../../../../usr/local/include/luajit-2.0
@@ -30,7 +32,9 @@ HEADERS += \
     json/PrettyPrinter.hpp \
     json/Printer.hpp \
     plugin.h \
-    luatools.h
+    luatools.h \
+    web/mongoose.h \
+    httpserver.h
 
 OTHER_FILES += config.lua \
     libs/skeleton/skeleton.cpp

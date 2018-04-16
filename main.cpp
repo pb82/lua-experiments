@@ -4,6 +4,7 @@
 #include "nulldb.h"
 #include "asyncqueue.h"
 #include "pluginregistry.h"
+#include "httpserver.h"
 
 using namespace std;
 
@@ -81,7 +82,11 @@ int main()
         AsyncQueue::instance().submit(act);
     }
 
+    HttpServer server(&logger);
+    std::thread serverThread(&HttpServer::serverLoop, &server);
+
     AsyncQueue::instance().run();    
+    serverThread.join();
 
     delete persistence;
     return 0;

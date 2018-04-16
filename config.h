@@ -85,7 +85,9 @@ public:
     PersistenceType getPersistenceType();
 
     // Get config for a specific plugin
-    JSON::Value &getPluginConfig(std::string &&plugin);
+    JSON::Value &getPluginConfig(std::string plugin);
+    std::vector<std::string> getConfiguredPlugins();
+
 private:
     // Logger config
     std::string logLevel = "info";

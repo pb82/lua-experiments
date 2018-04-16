@@ -91,6 +91,20 @@ void LuaTools::writeObject(lua_State *L, JSON::Value &val)
     }
 }
 
+void LuaTools::writeArray(lua_State *L, JSON::Value &val)
+{
+    JSON::Array arr = val.as<JSON::Array>();
+
+    lua_createtable(L, arr.size(), 0);
+
+    for (unsigned int i = 1; i < arr.size() + 1; i++)
+    {
+        lua_pushnumber(L, i);
+        writeValue(L, arr[i - 1]);
+        lua_settable(L, -3);
+    }
+}
+
 void LuaTools::writeValue(lua_State *L, JSON::Value &val)
 {
     switch(val.getType())
@@ -109,6 +123,9 @@ void LuaTools::writeValue(lua_State *L, JSON::Value &val)
         break;
     case JSON::JSON_OBJECT:
         writeObject(L, val);
+        break;
+    case JSON::JSON_ARRAY:
+        writeArray(L, val);
         break;
     default:
         luaL_error(L, "writeValue: unsupported type");

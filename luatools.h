@@ -12,6 +12,7 @@ public:
 
     static void writeValue(lua_State *L, JSON::Value &val);
     static void writeObject(lua_State *L, JSON::Value &val);
+    static void writeArray(lua_State *L, JSON::Value &val);
 };
 
 #endif // LUATOOLS_H

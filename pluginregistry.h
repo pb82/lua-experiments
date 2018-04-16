@@ -24,6 +24,8 @@ public:
 
 private:
     void loadPlugins();
+    void loadPlugin(std::string file);
+
     Logger *logger;
     Config *config;
 

@@ -11,9 +11,5 @@ Nulldb {
 }
 
 Plugin "skeleton" {
-    value = 33,
-    a = 33,
-    id = {
-        ["$gt"] = 10
-    }
+    file="./skeleton.so"
 }

@@ -16,9 +16,26 @@ plugin_ptr PluginRegistry::getPlugin(const char *name)
 
 void PluginRegistry::loadPlugins()
 {
+    for (std::string const& plugin : config->getConfiguredPlugins())
+    {
+        JSON::Value pluginConfig = config->getPluginConfig(plugin);
+        if (pluginConfig.is(JSON::JSON_OBJECT))
+        {
+            loadPlugin(pluginConfig["file"].as<std::string>());
+        } else
+        {
+            logger->error("Plugin config not an object (%s)", plugin.c_str());
+        }
+    }
+}
+
+void PluginRegistry::loadPlugin(std::string file)
+{
+    logger->info("Loading plugin from file: %s", file.c_str());
+
     int status = 0;
     uv_lib_t *lib = (uv_lib_t *) malloc(sizeof(uv_lib_t));
-    status = uv_dlopen(SKELETON_PLUGIN_PATH, lib);
+    status = uv_dlopen(file.c_str(), lib);
 
     if (status < 0)
     {
@@ -32,4 +49,6 @@ void PluginRegistry::loadPlugins()
     Plugin *plugin = create();
     plugin->setup(config->getPluginConfig(plugin->name()));
     plugins[plugin->name()] = std::shared_ptr<Plugin>(plugin);
+
+    logger->info("Plugin loaded successfully");
 }
