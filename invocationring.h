@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <mutex>
+#include <atomic>
 
 #include "json/Value.hpp"
 
@@ -21,8 +22,10 @@ public:
     void putCallback(long invocationId, std::function<void (void *)> cb);
     void putAction(long invocationId, void *action);
 private:
-    std::map<long, Invocation> invocations;
-    std::mutex _lock;
+    std::map<long, Invocation> *invocations;
+
+    static std::mutex _lock;
+    static std::atomic<std::map<long, Invocation> *> ptr;
 };
 
 #endif // INVOCATIONRING_H

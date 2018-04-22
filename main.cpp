@@ -64,15 +64,15 @@ int main()
     }
 
     PluginRegistry registry(&logger, &config);
-    InvocationRing invocations;
+    InvocationRing *invocations = new InvocationRing;
 
     AsyncQueue::instance().setLogger(&logger);
     AsyncQueue::instance().setPersistence(persistence);
     AsyncQueue::instance().setRegistry(&registry);
-    AsyncQueue::instance().setInvocations(&invocations);
+    AsyncQueue::instance().setInvocations(invocations);
 
     HttpServer server(&logger);
-    server.invocations = &invocations;
+    server.invocations = invocations;
 
     std::thread serverThread(&HttpServer::serverLoop, &server);
 
