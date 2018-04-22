@@ -46,6 +46,13 @@ public:
      * @return A reference to a string in which the bytecode is stored
      */
     virtual const std::string& getAction(std::string name) = 0;
+
+    /**
+     * @brief hasAction Checks if an action with a given name exists
+     * @param name The name of the action
+     * @return bool true if an action with the given name exists
+     */
+    virtual bool hasAction(std::string name) = 0;
 };
 
 #endif // PERSISTENCE_H

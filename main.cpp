@@ -5,6 +5,7 @@
 #include "asyncqueue.h"
 #include "pluginregistry.h"
 #include "httpserver.h"
+#include "invocationring.h"
 
 using namespace std;
 
@@ -55,7 +56,7 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function foo() a={}; local r = call('skeleton','add',{a=12}); print('result: ', r); end\n function main() if pcall(foo) then print('success') else print('error') end end", &bytecode);
+    bool result = compileAction(logger, "function foo() a={}; local r = call('skeleton','add',{a=12}); end\n function main() if pcall(foo) then return {x='test'}; else print('error') end end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());
@@ -63,29 +64,20 @@ int main()
     }
 
     PluginRegistry registry(&logger, &config);
+    InvocationRing invocations;
 
     AsyncQueue::instance().setLogger(&logger);
     AsyncQueue::instance().setPersistence(persistence);
-
-    // Stress testing
-    for (int i = 0; i < 1; i++)
-    {
-        ActionBaton *act = new ActionBaton("hello");
-        act->registry = &registry;
-
-        // Script needs to finish in 1 second or be killed
-        act->timeout = 1000;
-
-        // Script cannot use more than 100 kilobytes
-        act->maxmem = 10;
-
-        AsyncQueue::instance().submit(act);
-    }
+    AsyncQueue::instance().setRegistry(&registry);
+    AsyncQueue::instance().setInvocations(&invocations);
 
     HttpServer server(&logger);
+    server.invocations = &invocations;
+
     std::thread serverThread(&HttpServer::serverLoop, &server);
 
-    AsyncQueue::instance().run();    
+    AsyncQueue::instance().run();
+
     serverThread.join();
 
     delete persistence;

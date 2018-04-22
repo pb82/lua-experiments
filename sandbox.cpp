@@ -11,10 +11,15 @@ Sandbox::Sandbox()
     SET_ENV;
 }
 
+Sandbox::~Sandbox()
+{
+    lua_close(L);
+}
+
 void Sandbox::hook(lua_State *L, lua_Debug *)
 {
     GET_ENV(env);
-    GET_THIS(Sandbox, This);
+    GET_THIS(Sandbox, This);        
     UPDATE_MS(This, running);
 
     if (This->mslimit > 0 && This->running >= This->mslimit)
@@ -25,7 +30,7 @@ void Sandbox::hook(lua_State *L, lua_Debug *)
     if (This->kblimit > 0 && lua_gc(L, LUA_GCCOUNT, 0) >= This->kblimit)
     {
         std::longjmp(*env, ErrMemory);
-    }
+    }        
 }
 
 void Sandbox::loadLibraries()
@@ -82,11 +87,11 @@ int Sandbox::callPlugin(lua_State *L)
         LuaTools::writeValue(L, result);
     }
 
-    uv_rwlock_rdunlock(&This->lock);
+    uv_rwlock_wrunlock(&This->lock);
     return 1;
 }
 
-RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string *msg)
+RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string *msg, JSON::Value &result)
 {
     int status, type;
 
@@ -140,11 +145,12 @@ RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string 
     }
 
     // Second call to actually run the main function
-    if ((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)
+    if ((status = lua_pcall(L, 0, 1, 0)) != LUA_OK)
     {
         *msg = lua_tostring(L, -1);
         return ErrMain;
     }
 
+    LuaTools::readValue(L, result);
     return Success;
 }

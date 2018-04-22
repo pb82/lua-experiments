@@ -1,5 +1,7 @@
 #include "asyncqueue.h"
 
+std::atomic<long> ActionBaton::invocations(1);
+
 AsyncQueue& AsyncQueue::instance()
 {
     static AsyncQueue instance;
@@ -8,8 +10,9 @@ AsyncQueue& AsyncQueue::instance()
 
 AsyncQueue::AsyncQueue() : loop(uv_default_loop())
 {
-    // uv_idle_init(loop, &idler);
-    // uv_idle_start(&idler, idleCallback);
+    uv_rwlock_init(&lock);
+    uv_idle_init(loop, &idler);
+    uv_idle_start(&idler, idleCallback);
 }
 
 AsyncQueue::~AsyncQueue()
@@ -19,7 +22,7 @@ AsyncQueue::~AsyncQueue()
 
 void AsyncQueue::run()
 {
-    uv_run(loop, UV_RUN_DEFAULT);
+    uv_run(loop, UV_RUN_NOWAIT);
 }
 
 void AsyncQueue::submit(ActionBaton *job)
@@ -30,13 +33,19 @@ void AsyncQueue::submit(ActionBaton *job)
 void AsyncQueue::actionCleanup(uv_work_t *req, int)
 {
     ActionBaton *action = (ActionBaton *) req->data;
-
     if (action->code != Success)
     {
         AsyncQueue::instance().logger().error(action->msg.c_str());
     }
 
-    delete action;
+    if (action->callback)
+    {
+        action->callback(action->code, action->result);
+        delete action;
+    } else
+    {
+        AsyncQueue::instance().invocations()->putAction(action->invocationId, action);
+    }
 }
 
 void AsyncQueue::actionRun(uv_work_t *req)
@@ -45,10 +54,11 @@ void AsyncQueue::actionRun(uv_work_t *req)
     std::string bytecode = AsyncQueue::instance().persistence().getAction(action->name);
 
     Sandbox sandbox;
-    sandbox.registry = action->registry;
+    sandbox.registry = AsyncQueue::instance().registry();
     sandbox.mslimit = action->timeout;
     sandbox.kblimit = action->maxmem;
-    RunCode result = sandbox.runAction(action->name, bytecode, &action->msg);
+    RunCode result = sandbox.runAction(action->name,
+                                       bytecode, &action->msg, action->result);
     action->code = result;
 }
 
@@ -75,4 +85,29 @@ Logger& AsyncQueue::logger()
 Persistence &AsyncQueue::persistence()
 {
     return *_persistence;
+}
+
+bool AsyncQueue::hasAction(std::string name)
+{
+    return _persistence->hasAction(name);
+}
+
+PluginRegistry *AsyncQueue::registry()
+{
+    return _registry;
+}
+
+void AsyncQueue::setRegistry(PluginRegistry *registry)
+{
+    this->_registry = registry;
+}
+
+InvocationRing *AsyncQueue::invocations()
+{
+    return this->_invocations;
+}
+
+void AsyncQueue::setInvocations(InvocationRing *invocations)
+{
+    this->_invocations = invocations;
 }

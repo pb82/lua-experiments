@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     pluginregistry.cpp \
     luatools.cpp \
     web/mongoose.c \
-    httpserver.cpp
+    httpserver.cpp \
+    invocationring.cpp
 
 
 LIBS += -llua -luv -pthread
@@ -34,7 +35,8 @@ HEADERS += \
     plugin.h \
     luatools.h \
     web/mongoose.h \
-    httpserver.h
+    httpserver.h \
+    invocationring.h
 
 OTHER_FILES += config.lua \
     libs/skeleton/skeleton.cpp

@@ -23,6 +23,7 @@ public:
 
     void addAction(std::string name, std::string bytecode);
     const std::string& getAction(std::string name);
+    bool hasAction(std::string name);
 private:
     std::map<std::string, std::string> storage;
 };

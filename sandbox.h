@@ -47,6 +47,7 @@ class Sandbox
 {
 public:
     Sandbox();
+    ~Sandbox();
 
     /**
      * @brief runAction Run an action inside the sandbox
@@ -57,7 +58,8 @@ public:
      * successfully and if not, provides information about the
      * error
      */  
-    RunCode runAction(std::string name, std::string &bytecode, std::string *msg);
+    RunCode runAction(std::string name, std::string &bytecode,
+                      std::string *msg, JSON::Value &result);
 
     /**
      * @brief ms
