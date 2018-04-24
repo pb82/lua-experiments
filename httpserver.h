@@ -7,18 +7,27 @@
 #include "web/mongoose.h"
 #include "logger.h"
 #include "asyncqueue.h"
+#include "json/Parser.hpp"
 
 class Matcher
 {
 public:
-    Matcher(const char *pattern)
+    Matcher(const char *method, const char *pattern) : method(method)
     {
-        split(pattern, '/', std::back_inserter(patternParts));
+        split(pattern, '/', std::back_inserter(patternParts));        
     }
 
-    bool match(std::string &uri, std::map<std::string, std::string> &vars)
+    bool match(http_message *req, std::map<std::string, std::string> &vars)
     {
+        std::string _method(req->method.p, req->method.len);
+        if (_method.compare(method) != 0)
+        {
+            return false;
+        }
+
+        std::string uri(req->uri.p, req->uri.len);
         std::vector<std::string> uriParts;
+
         split(uri, '/', std::back_inserter(uriParts));
 
         if (uriParts.size() != patternParts.size())
@@ -85,6 +94,7 @@ private:
     static Matcher route_get_invocation;
 
     static JSON::Printer printer;
+    static JSON::Parser parser;
 };
 
 #endif // HTTPSERVER_H

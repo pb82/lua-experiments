@@ -58,7 +58,8 @@ void AsyncQueue::actionRun(uv_work_t *req)
     sandbox.mslimit = action->timeout;
     sandbox.kblimit = action->maxmem;
     RunCode result = sandbox.runAction(action->name,
-                                       bytecode, &action->msg, action->result);
+                                       bytecode, &action->msg,
+                                       action->result, action->argument);
     action->code = result;
 }
 

@@ -59,7 +59,7 @@ public:
      * error
      */  
     RunCode runAction(std::string name, std::string &bytecode,
-                      std::string *msg, JSON::Value &result);
+                      std::string *msg, JSON::Value &result, JSON::Value &argument);
 
     /**
      * @brief ms

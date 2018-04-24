@@ -33,6 +33,7 @@ public:
     std::string msg;
     RunCode code;
     JSON::Value result;
+    JSON::Value argument;
     std::function<void(int code, JSON::Value result)> callback;
     static std::atomic<long> invocations;
 };

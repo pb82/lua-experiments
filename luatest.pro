@@ -36,7 +36,9 @@ HEADERS += \
     luatools.h \
     web/mongoose.h \
     httpserver.h \
-    invocationring.h
+    invocationring.h \
+    json/Parser.hpp \
+    json/Utf8.hpp
 
 OTHER_FILES += config.lua \
     libs/skeleton/skeleton.cpp

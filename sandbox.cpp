@@ -91,7 +91,7 @@ int Sandbox::callPlugin(lua_State *L)
     return 1;
 }
 
-RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string *msg, JSON::Value &result)
+RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string *msg, JSON::Value &result, JSON::Value &argument)
 {
     int status, type;
 
@@ -144,8 +144,11 @@ RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string 
         return ErrUnknown;
     }
 
+    // Inject the artument
+    LuaTools::writeValue(L, argument);
+
     // Second call to actually run the main function
-    if ((status = lua_pcall(L, 0, 1, 0)) != LUA_OK)
+    if ((status = lua_pcall(L, 1, 1, 0)) != LUA_OK)
     {
         *msg = lua_tostring(L, -1);
         return ErrMain;
