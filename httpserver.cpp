@@ -22,9 +22,15 @@ void HttpServer::requestHandler(mg_connection *c, int ev, void *p)
         bool exists = AsyncQueue::instance().hasAction(vars[":id"]);
         if (exists)
         {
-            std::string body(req->body.p, req->body.len);
             JSON::Value val;
-            parser.parse(val, body);
+            try {
+                std::string body(req->body.p, req->body.len);
+                parser.parse(val, body);
+            } catch(std::runtime_error err) {
+                mg_send_head(c, 500, strlen(err.what()), "text/plain");
+                mg_printf(c, err.what());
+                return;
+            }
 
             ActionBaton *act = new ActionBaton(vars[":id"]);
             act->timeout = 1000;
@@ -67,9 +73,15 @@ void HttpServer::requestHandler(mg_connection *c, int ev, void *p)
         bool exists = AsyncQueue::instance().hasAction(vars[":id"]);
         if (exists)
         {
-            std::string body(req->body.p, req->body.len);
             JSON::Value val;
-            parser.parse(val, body);
+            try {
+                std::string body(req->body.p, req->body.len);
+                parser.parse(val, body);
+            } catch(std::runtime_error err) {
+                mg_send_head(c, 500, strlen(err.what()), "text/plain");
+                mg_printf(c, err.what());
+                return;
+            }
 
             ActionBaton *act = new ActionBaton(vars[":id"]);
             act->timeout = 1000;
@@ -79,7 +91,7 @@ void HttpServer::requestHandler(mg_connection *c, int ev, void *p)
             long invocationId = act->invocationId;
             AsyncQueue::instance().submit(act);
             AsyncQueue::instance().run();
-            JSON::Value result = invocationId;
+            JSON::Value result = JSON::Object {{"InvocationId", invocationId}};
             std::string json = printer.print(result);
             mg_send_head(c, 200, json.size(), "Content-Type: application/json");
             mg_printf(c, json.c_str());
