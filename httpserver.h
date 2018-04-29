@@ -8,6 +8,7 @@
 #include "logger.h"
 #include "asyncqueue.h"
 #include "json/Parser.hpp"
+#include "base64.h"
 
 class Matcher
 {
@@ -93,6 +94,8 @@ private:
     static Matcher route_action_noblock;
     static Matcher route_get_invocation;
     static Matcher route_ping;
+    static Matcher route_list_actions;
+    static Matcher route_action_create;
 
     static JSON::Printer printer;
     static JSON::Parser parser;

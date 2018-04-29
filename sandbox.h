@@ -58,7 +58,7 @@ public:
      * successfully and if not, provides information about the
      * error
      */  
-    RunCode runAction(std::string name, std::string &bytecode,
+    RunCode runAction(std::string name, const std::string &bytecode,
                       std::string *msg, JSON::Value &result, JSON::Value &argument);
 
     /**

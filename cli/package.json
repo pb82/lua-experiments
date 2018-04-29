@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "CLI for the Lua FaaS",
   "main": "dist/index.js",
+  "bin": {
+    "slcli": "dist/slcli"
+  },
   "license": "MIT",
   "dependencies": {
     "@types/axios": "^0.14.0",

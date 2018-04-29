@@ -98,7 +98,7 @@ int Sandbox::callPlugin(lua_State *L)
     return 1;
 }
 
-RunCode Sandbox::runAction(std::string name, std::string &bytecode, std::string *msg, JSON::Value &result, JSON::Value &argument)
+RunCode Sandbox::runAction(std::string name, const std::string &bytecode, std::string *msg, JSON::Value &result, JSON::Value &argument)
 {
     int status, type;
 

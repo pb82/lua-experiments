@@ -38,7 +38,8 @@ HEADERS += \
     httpserver.h \
     invocationring.h \
     json/Parser.hpp \
-    json/Utf8.hpp
+    json/Utf8.hpp \
+    base64.h
 
 OTHER_FILES += config.lua \
     libs/skeleton/skeleton.cpp

@@ -20,6 +20,30 @@ AsyncQueue::~AsyncQueue()
     uv_loop_close(loop);
 }
 
+int AsyncQueue::bytecodeWriter(lua_State *, const void *p, size_t sz, void *ud)
+{
+    std::string *buffer = (std::string *)ud;
+    buffer->append((const char *)p, sz);
+    return 0;
+}
+
+bool AsyncQueue::compileAction(const char* action, std::string *buffer)
+{
+    int status;
+    lua_State *L = luaL_newstate();
+
+    // Check if the chunk was compiled without errors
+    if ((status = luaL_loadstring(L, action)) != LUA_OK)
+    {
+        logger().error(lua_tostring(L, -1));
+        return false;
+    }
+
+    lua_dump(L, bytecodeWriter, buffer, true);
+    lua_close(L);
+    return true;
+}
+
 void AsyncQueue::run()
 {    
     uv_run(loop, UV_RUN_DEFAULT);
@@ -51,14 +75,14 @@ void AsyncQueue::actionCleanup(uv_work_t *req, int)
 void AsyncQueue::actionRun(uv_work_t *req)
 {
     ActionBaton *action = (ActionBaton *) req->data;
-    std::string bytecode = AsyncQueue::instance().persistence().getAction(action->name);
+    const ActionDefinition &def = AsyncQueue::instance().persistence().getAction(action->name);
 
     Sandbox sandbox;
     sandbox.registry = AsyncQueue::instance().registry();
-    sandbox.mslimit = action->timeout;
-    sandbox.kblimit = action->maxmem;
+    sandbox.mslimit = def.timeout;
+    sandbox.kblimit = def.maxmem;
     RunCode result = sandbox.runAction(action->name,
-                                       bytecode, &action->msg,
+                                       def.bytecode, &action->msg,
                                        action->result, action->argument);
     action->code = result;
 }

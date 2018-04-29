@@ -67,6 +67,8 @@ public:
     void enqueue(ActionBaton *action);
     ActionBaton *dequeue();
 
+    bool compileAction(const char* action, std::string *buffer);
+    static int bytecodeWriter(lua_State *, const void *p, size_t sz, void *ud);
 private:
     AsyncQueue();
 

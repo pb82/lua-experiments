@@ -2,6 +2,7 @@
 #define PERSISTENCE_H
 
 #include <string>
+#include <vector>
 
 /**
  * @brief The PersistenceError class
@@ -15,6 +16,15 @@ public:
         : std::runtime_error(message)
     {
     }
+};
+
+class ActionDefinition
+{
+public:
+    std::string bytecode;
+    std::string name;
+    int timeout = 0;
+    int maxmem = 0;
 };
 
 /**
@@ -38,14 +48,14 @@ public:
      * @param name The name under which the action will be stored
      * @param bytecode The compiled lua bytecode encoded in a string
      */
-    virtual void addAction(std::string name, std::string bytecode) = 0;
+    virtual void addAction(std::string name, std::string bytecode, int timeout, int maxmem) = 0;
 
     /**
      * @brief getAction Retrieve the bytecode of an action by name
      * @param name The name of the action
      * @return A reference to a string in which the bytecode is stored
      */
-    virtual const std::string& getAction(std::string name) = 0;
+    virtual const ActionDefinition& getAction(std::string name) = 0;
 
     /**
      * @brief hasAction Checks if an action with a given name exists
@@ -53,6 +63,8 @@ public:
      * @return bool true if an action with the given name exists
      */
     virtual bool hasAction(std::string name) = 0;
+
+    virtual void getActions(std::vector<ActionDefinition> &list) = 0;
 };
 
 #endif // PERSISTENCE_H
