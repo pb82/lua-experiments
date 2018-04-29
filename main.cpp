@@ -56,7 +56,7 @@ int main()
     Persistence *persistence = getPersistenceLayer(config, logger);
 
     std::string bytecode;
-    bool result = compileAction(logger, "function main(args) return args end", &bytecode);
+    bool result = compileAction(logger, "function main(args) return call('skeleton', 'add', args) end", &bytecode);
     if (result)
     {
         logger.info("Compilation successful. Bytecode size: %d", bytecode.size());

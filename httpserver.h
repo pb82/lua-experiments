@@ -92,6 +92,7 @@ private:
     static Matcher route_action_block;
     static Matcher route_action_noblock;
     static Matcher route_get_invocation;
+    static Matcher route_ping;
 
     static JSON::Printer printer;
     static JSON::Parser parser;

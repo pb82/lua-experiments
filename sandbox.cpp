@@ -83,8 +83,15 @@ int Sandbox::callPlugin(lua_State *L)
     if(This->registry)
     {
         plugin_ptr plugin = This->registry->getPlugin(plname.c_str());
-        JSON::Value result = plugin->call(action, payload);
-        LuaTools::writeValue(L, result);
+        try
+        {
+            JSON::Value result = plugin->call(action, payload);
+            LuaTools::writeValue(L, result);
+        } catch (std::runtime_error err)
+        {
+            lua_pushstring(L, err.what());
+            lua_error(L);
+        }
     }
 
     uv_rwlock_wrunlock(&This->lock);

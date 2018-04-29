@@ -21,8 +21,8 @@ AsyncQueue::~AsyncQueue()
 }
 
 void AsyncQueue::run()
-{
-    uv_run(loop, UV_RUN_NOWAIT);
+{    
+    uv_run(loop, UV_RUN_DEFAULT);
 }
 
 void AsyncQueue::submit(ActionBaton *job)
@@ -65,7 +65,14 @@ void AsyncQueue::actionRun(uv_work_t *req)
 
 void AsyncQueue::idleCallback(uv_idle_t *)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    ActionBaton *nextAction = AsyncQueue::instance().dequeue();
+    if (nextAction)
+    {
+        AsyncQueue::instance().submit(nextAction);
+    } else
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
 
 void AsyncQueue::setLogger(Logger *logger)
@@ -111,4 +118,22 @@ InvocationRing *AsyncQueue::invocations()
 void AsyncQueue::setInvocations(InvocationRing *invocations)
 {
     this->_invocations = invocations;
+}
+
+void AsyncQueue::enqueue(ActionBaton *action)
+{
+    queuedActions.push(action);
+}
+
+ActionBaton *AsyncQueue::dequeue()
+{
+    ActionBaton *result = nullptr;
+    // uv_rwlock_wrlock(&lock);
+    if (queuedActions.size() > 0)
+    {
+        result = queuedActions.front();
+        queuedActions.pop();
+    }
+    // uv_rwlock_wrunlock(&lock);
+    return result;
 }

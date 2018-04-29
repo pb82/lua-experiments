@@ -12,7 +12,9 @@ public:
 
     JSON::Value call(const std::string& action, JSON::Value& payload)
     {
-        return 0;
+        int x = payload["x"].as<int>();
+        int y = payload["y"].as<int>();
+        return x + y;
     }
 
     std::string name()

@@ -3,6 +3,7 @@
 Matcher HttpServer::route_action_block("POST", "/actions/:id/block");
 Matcher HttpServer::route_action_noblock("POST", "/actions/:id");
 Matcher HttpServer::route_get_invocation("GET", "/invocation/:id");
+Matcher HttpServer::route_ping("GET", "/ping");
 
 JSON::Printer HttpServer::printer;
 JSON::Parser HttpServer::parser;
@@ -17,12 +18,18 @@ void HttpServer::requestHandler(mg_connection *c, int ev, void *p)
     http_message *req = static_cast<http_message *>(p);    
     std::map<std::string, std::string> vars;
 
-    if (HttpServer::route_action_block.match(req, vars))
+    if (HttpServer::route_ping.match(req, vars))
+    {
+        const char *resp = "OK";
+        AsyncQueue::instance().logger().info("Ping request received");
+        mg_send_head(c, 200, std::strlen(resp), "Content-Type: text/plain");
+        mg_printf(c, resp);
+    } else if (HttpServer::route_action_block.match(req, vars))
     {
         bool exists = AsyncQueue::instance().hasAction(vars[":id"]);
         if (exists)
         {
-            JSON::Value val;
+            JSON::Value val;            
             try {
                 std::string body(req->body.p, req->body.len);
                 parser.parse(val, body);
@@ -47,14 +54,14 @@ void HttpServer::requestHandler(mg_connection *c, int ev, void *p)
                     mg_send_head(c, 500, 0, nullptr);
                 }
             };
-            AsyncQueue::instance().submit(act);
-            AsyncQueue::instance().run();
+            AsyncQueue::instance().enqueue(act);
         } else {
             std::string reply = "Action not found";
             mg_send_head(c, 404, reply.size(), "Content-Type: text/plain");
             mg_printf(c, reply.c_str());
         }
-    } else if (route_get_invocation.match(req, vars)) {
+    } else if (route_get_invocation.match(req, vars))
+    {
         long invocationId = std::stol(vars[":id"]);
         InvocationRing *invocations = static_cast<InvocationRing *>(c->user_data);
         invocations->putCallback(invocationId, [c](void *action){
@@ -69,7 +76,8 @@ void HttpServer::requestHandler(mg_connection *c, int ev, void *p)
                 mg_send_head(c, 500, 0, nullptr);
             }
         });
-    } else if (HttpServer::route_action_noblock.match(req, vars)) {
+    } else if (HttpServer::route_action_noblock.match(req, vars))
+    {
         bool exists = AsyncQueue::instance().hasAction(vars[":id"]);
         if (exists)
         {
@@ -89,13 +97,13 @@ void HttpServer::requestHandler(mg_connection *c, int ev, void *p)
             act->argument = val;
 
             long invocationId = act->invocationId;
-            AsyncQueue::instance().submit(act);
-            AsyncQueue::instance().run();
+            AsyncQueue::instance().enqueue(act);
             JSON::Value result = JSON::Object {{"InvocationId", invocationId}};
             std::string json = printer.print(result);
             mg_send_head(c, 200, json.size(), "Content-Type: application/json");
             mg_printf(c, json.c_str());
-        } else {
+        }  else
+        {
             std::string reply = "Action not found";
             mg_send_head(c, 404, reply.size(), "Content-Type: text/plain");
             mg_printf(c, reply.c_str());

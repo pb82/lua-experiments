@@ -8,6 +8,7 @@
 #include <atomic>
 #include <functional>
 #include <uv.h>
+#include <queue>
 
 #include "logger.h"
 #include "persistence.h"
@@ -63,6 +64,9 @@ public:
     void submit(ActionBaton *job);
     bool hasAction(std::string name);
 
+    void enqueue(ActionBaton *action);
+    ActionBaton *dequeue();
+
 private:
     AsyncQueue();
 
@@ -77,6 +81,8 @@ private:
     static void idleCallback(uv_idle_t*);
     static void actionCleanup(uv_work_t *req, int);
     static void actionRun(uv_work_t *req);
+
+    std::queue<ActionBaton *> queuedActions;
 
     uv_rwlock_t lock;
 };
