@@ -5,6 +5,7 @@
 #include <csetjmp>
 #include <chrono>
 #include <iostream>
+#include <mutex>
 
 #include <lua.hpp>
 #include <uv.h>
@@ -101,7 +102,7 @@ private:
 
     lua_State *L;
     jmp_buf env;
-    uv_rwlock_t lock;
+    static std::mutex _lock;
 };
 
 #endif // SANDBOX_H

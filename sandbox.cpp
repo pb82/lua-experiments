@@ -1,9 +1,10 @@
 #include "sandbox.h"
 
+std::mutex Sandbox::_lock;
+
 Sandbox::Sandbox()
 {
     L = luaL_newstate();
-    uv_rwlock_init(&lock);
     loadLibraries();
 
     // Set up the pointers
@@ -68,9 +69,8 @@ void Sandbox::loadLibraries()
 
 int Sandbox::callPlugin(lua_State *L)
 {
+    std::lock_guard<std::mutex> lock(_lock);
     GET_THIS(Sandbox, This);
-    uv_rwlock_wrlock(&This->lock);
-
     lua_settop(L, 3);
     luaL_checktype(L, 1, LUA_TSTRING);
 
@@ -94,7 +94,6 @@ int Sandbox::callPlugin(lua_State *L)
         }
     }
 
-    uv_rwlock_wrunlock(&This->lock);
     return 1;
 }
 

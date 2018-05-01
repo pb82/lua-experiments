@@ -46,6 +46,7 @@ HEADERS += \
     mongoadapter.h
 
 OTHER_FILES += config.lua \
-    libs/skeleton/skeleton.cpp
+    libs/skeleton/skeleton.cpp \
+    libs/mongo/mongo.cpp
 
 QMAKE_POST_LINK += $$quote(cp $${PWD}/*.lua $${OUT_PWD})
