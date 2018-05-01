@@ -11,7 +11,7 @@ Logger {
 -- }
 
 Mongodb {
-    url="mongodb://localhost",
+    url="mongodb://database",
     port=27017
 }
 
@@ -21,6 +21,6 @@ Plugin "skeleton" {
 
 Plugin "mongo" {
     file="./mongo.so",
-    url="mongodb://localhost:27017",
+    url="mongodb://database:27017",
     database="mongoplugin"
 }

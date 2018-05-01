@@ -7,6 +7,7 @@ RUN useradd -d /home/luser -g wheel -ms /bin/bash luser
 
 ADD ./luatest /home/luser/luatest
 ADD ./skeleton.so /home/luser/skeleton.so
+ADD ./mongo.so /home/luser/mongo.so
 ADD ./config.lua /home/luser/config.lua
 
 RUN ln -s /usr/lib64/liblua-5.3.so /usr/lib64/liblua.so.5.3

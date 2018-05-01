@@ -1,6 +1,6 @@
 #include "httpserver.h"
 
-Matcher HttpServer::route_action_block("GET", "/actions/:id/block");
+Matcher HttpServer::route_action_block("POST", "/actions/:id/block");
 Matcher HttpServer::route_action_noblock("POST", "/actions/:id");
 Matcher HttpServer::route_get_invocation("GET", "/invocation/:id");
 Matcher HttpServer::route_ping("GET", "/ping");
