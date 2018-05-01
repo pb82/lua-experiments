@@ -1,0 +1,19 @@
+version: '3'
+services:
+        luatest:
+                image: pb82/luatest:latest
+                container_name: "luatest"
+                ports:
+                        - 8080:8080
+                links:
+                        - database
+                depends_on:
+                        - database
+        database:
+                image: mongo:latest
+                container_name: "database"
+                environment:
+                        - MONGO_LOG_DIR=/dev/null
+                ports:
+                        - 27017:27017
+                command: mongod --smallfiles --logpath=/dev/null

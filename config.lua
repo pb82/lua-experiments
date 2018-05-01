@@ -11,7 +11,7 @@ Logger {
 -- }
 
 Mongodb {
-    url="mongodb://localhost",
+    url="mongodb://database",
     port=27017
 }
 

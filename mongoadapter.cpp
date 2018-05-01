@@ -33,7 +33,7 @@ void MongoAdapter::init()
     mongoc_client_set_appname(client, "slserver");
     database = mongoc_client_get_database(client, M_DATABASE);
     collection = mongoc_client_get_collection(client, M_DATABASE, M_COLLECTION);
-    logger->info("Connected to Mongodb (using Database '%s')", M_DATABASE);
+    logger->info("Using Mongodb (%s:%d)", mongoUrl.c_str(), mongoPort);
 }
 
 void MongoAdapter::addAction(std::string name, std::string bytecode, int timeout, int maxmem)
