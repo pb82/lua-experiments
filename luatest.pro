@@ -6,15 +6,18 @@ SOURCES += main.cpp \
     config.cpp \
     nulldb.cpp \
     sandbox.cpp \
-    asyncqueue.cpp \    
+    asyncqueue.cpp \
     pluginregistry.cpp \
     luatools.cpp \
     web/mongoose.c \
     httpserver.cpp \
-    invocationring.cpp
+    invocationring.cpp \
+    mongoadapter.cpp
 
 
-LIBS += -llua -luv -pthread
+LIBS += -llua -luv -lmongoc-1.0 -lbson-1.0 -pthread
+INCLUDEPATH += /usr/include/libbson-1.0/
+INCLUDEPATH += /usr/include/libmongoc-1.0/
 
 # unix:!macx: LIBS += -L$$PWD/../../../../usr/local/lib/ -lluajit-5.1
 # INCLUDEPATH += $$PWD/../../../../usr/local/include/luajit-2.0
@@ -39,7 +42,8 @@ HEADERS += \
     invocationring.h \
     json/Parser.hpp \
     json/Utf8.hpp \
-    base64.h
+    base64.h \
+    mongoadapter.h
 
 OTHER_FILES += config.lua \
     libs/skeleton/skeleton.cpp

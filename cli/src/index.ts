@@ -18,12 +18,17 @@ function pingServer(url: string) : Promise<any> {
     });
 }
 
-function runAction(url: string, action: string, blocking: boolean) : Promise<any> {
+function runAction(url: string, action: string, blocking: boolean, payload: string) : Promise<any> {
+    let payloadObj = {};
+    if (payload) {
+        payloadObj = readFileAsJson(payload);
+    }
+
     return new Promise((resolve: (result: any) => void, reject) => {
         url += ("/actions/" + action);
         blocking && (url += "/block");
 
-        axios.post(url)
+        axios.post(url, payloadObj)
             .then(resolve)
             .catch(reject);
     });
@@ -49,6 +54,11 @@ function readFileAsBase64(path: string) : string {
     return contents.toString("base64");
 }
 
+function readFileAsJson(path: string) : object {
+    const contents: Buffer = readFileSync(path);
+    return JSON.parse(contents.toString());
+}
+
 function createAction(url: string, name: string, path: string, timeout: string, memory: string) {
     url += "/actions";
 
@@ -61,6 +71,24 @@ function createAction(url: string, name: string, path: string, timeout: string, 
 
     axios.post(url, payload)
         .then(logSuccess)
+        .catch(logError);
+}
+
+function deleteAction(url: string, name: string) {
+    url += ("/actions/" + name);
+
+    axios.delete(url)
+        .then(logSuccess)
+        .catch(logError);
+}
+
+function resolveInvocation(url: string, id: string) {
+    url += ("/invocation/" + id);
+
+    axios.get(url, {timeout: 5000})
+        .then(result => {
+            console.log(result.data);
+        })
         .catch(logError);
 }
 
@@ -83,6 +111,7 @@ function main() {
 
     program
         .option("-b, --block", "Wait for response")
+        .option("-p, --payload <file>", "Function arguments")
         .option("-f, --file <file>", "Wait for response")
         .option("-m, --memory <memory>", "Maximum memory usage")
         .option("-t, --timeout <timeout>", "Action timeout");
@@ -117,7 +146,7 @@ function main() {
         .command("run <action>")
         .description("Run a single action")
         .action(action => {
-            runAction(config.url, action, program.block)
+            runAction(config.url, action, program.block, program.payload)
                 .then(result => {
                     logSuccess();
                     console.log(result.data);
@@ -129,13 +158,47 @@ function main() {
         .command("create <name>")
         .description("Create a single action")
         .action(name => {
+            if (!config) {
+                error("Please connect to a server first");
+                return;
+            }
+
             createAction(config.url, name, program.file, program.timeout, program.memory);
+        });
+
+    program
+        .command("delete <name>")
+        .description("Delete a single action")
+        .action(name => {
+            if (!config) {
+                error("Please connect to a server first");
+                return;
+            }
+
+            deleteAction(config.url, name);
+        });
+
+    program
+        .command("resolve <id>")
+        .description("Resolve incocation")
+        .action(id => {
+            if (!config) {
+                error("Please connect to a server first");
+                return;
+            }
+
+            resolveInvocation(config.url, id);
         });
 
     program
         .command("list")
         .description("List available actions")
         .action(() => {
+            if (!config) {
+                error("Please connect to a server first");
+                return;
+            }
+
             const url = config.url + "/actions";
             axios.get(url)
                 .then(result => {

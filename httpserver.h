@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <thread>
+#include <stdexcept>
 
 #include "web/mongoose.h"
 #include "logger.h"
@@ -96,6 +97,7 @@ private:
     static Matcher route_ping;
     static Matcher route_list_actions;
     static Matcher route_action_create;
+    static Matcher route_action_delete;
 
     static JSON::Printer printer;
     static JSON::Parser parser;

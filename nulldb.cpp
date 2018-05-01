@@ -7,11 +7,16 @@ void Nulldb::addAction(std::string name, std::string bytecode, int timeout, int 
     def->timeout = timeout;
     def->maxmem = maxmem;
     def->name = name;
+    def->size = bytecode.size();
 
     storage[name] = std::unique_ptr<ActionDefinition>(def);
 }
 
-const ActionDefinition &Nulldb::getAction(std::string name)
+Nulldb::~Nulldb()
+{
+}
+
+const ActionDefinition Nulldb::getAction(std::string name)
 {
     return *storage[name];
 }
@@ -28,4 +33,9 @@ void Nulldb::getActions(std::vector<ActionDefinition> &list)
     {
         list.push_back(*it->second);
     }
+}
+
+void Nulldb::deleteAction(std::string &name)
+{
+    storage.erase(name);
 }

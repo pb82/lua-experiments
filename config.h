@@ -18,7 +18,8 @@
 enum PersistenceType
 {
     UNCONFIGURED = 1,
-    NULLDB
+    NULLDB,
+    MONGODB
 };
 
 /**
@@ -64,6 +65,7 @@ public:
      * @return an integer (0) indicating the number of results
      */
     static int nulldb(lua_State *L);
+    static int mongodb(lua_State *L);
 
     static int plugin(lua_State *L);
     static int pcdata(lua_State *L);
@@ -83,6 +85,10 @@ public:
     // Get/Set persistence driver
     void setPersistenceType(PersistenceType type);
     PersistenceType getPersistenceType();
+    std::string& getMongoUrl();
+    void setMongoUrl(const char *url);
+    int getMongoPort();
+    void setMongoPort(int port);
 
     // Get config for a specific plugin
     JSON::Value &getPluginConfig(std::string plugin);
@@ -96,6 +102,8 @@ private:
 
     // Persistence config
     PersistenceType persistenceType = UNCONFIGURED;
+    std::string mongoUrl;
+    int mongoPort;
 
     // Plugin config
     std::string currentPlugin = "";

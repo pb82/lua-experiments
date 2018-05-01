@@ -5,9 +5,14 @@ Logger {
     timestamp=false
 }
 
-Nulldb {
+-- Nulldb {
     -- This is the default no-persistence option.
     -- Suitable for development. Needs no configuration.
+-- }
+
+Mongodb {
+    url="mongodb://localhost",
+    port=27017
 }
 
 Plugin "skeleton" {

@@ -18,6 +18,7 @@ class Nulldb : public Persistence
 {
 public:
     Nulldb() { }
+    ~Nulldb();
 
     void init()
     {
@@ -25,9 +26,10 @@ public:
     }
 
     void addAction(std::string name, std::string bytecode, int timeout, int maxmem);
-    const ActionDefinition& getAction(std::string name);
+    const ActionDefinition getAction(std::string name);
     bool hasAction(std::string name);
     void getActions(std::vector<ActionDefinition> &list);
+    void deleteAction(std::string &name);
 private:
     ActionMap storage;
 };

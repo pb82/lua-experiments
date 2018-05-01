@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 /**
  * @brief The PersistenceError class
@@ -25,6 +26,7 @@ public:
     std::string name;
     int timeout = 0;
     int maxmem = 0;
+    int size = 0;
 };
 
 /**
@@ -55,7 +57,7 @@ public:
      * @param name The name of the action
      * @return A reference to a string in which the bytecode is stored
      */
-    virtual const ActionDefinition& getAction(std::string name) = 0;
+    virtual const ActionDefinition getAction(std::string name) = 0;
 
     /**
      * @brief hasAction Checks if an action with a given name exists
@@ -63,6 +65,8 @@ public:
      * @return bool true if an action with the given name exists
      */
     virtual bool hasAction(std::string name) = 0;
+
+    virtual void deleteAction(std::string &name) = 0;
 
     virtual void getActions(std::vector<ActionDefinition> &list) = 0;
 };

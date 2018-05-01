@@ -1,6 +1,6 @@
 {
-  "name": "slcli",
-  "version": "1.0.0",
+  "name": "@pb82/slcli",
+  "version": "0.0.2",
   "description": "CLI for the Lua FaaS",
   "main": "dist/index.js",
   "bin": {

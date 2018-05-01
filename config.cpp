@@ -70,6 +70,41 @@ int Config::nulldb(lua_State *L)
     return 0;
 }
 
+
+int Config::mongodb(lua_State *L)
+{
+    GET_THIS(Config, This);
+
+    // Throw if another persistency type is already configured
+    if (This->getPersistenceType() != UNCONFIGURED)
+    {
+        luaL_error(L, "Only one persistence configuration allowed");
+    }
+
+    // Truncate to one argument and make sure its a table
+    lua_settop(L, 1);
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    lua_getfield(L, 1, "url");
+    lua_getfield(L, 1, "port");
+
+    // Remove the table
+    lua_remove(L, 1);
+
+    luaL_checktype(L, 1, LUA_TSTRING);
+    luaL_checktype(L, 2, LUA_TNUMBER);
+
+    const char* url = lua_tostring(L, 1);
+    int port = lua_tointeger(L, 2);
+
+    // Clear stack
+    lua_settop(L, 0);
+    This->setMongoUrl(url);
+    This->setMongoPort(port);
+    This->setPersistenceType(MONGODB);
+    return 0;
+}
+
 int Config::plugin(lua_State *L)
 {
     GET_THIS(Config, This);
@@ -109,13 +144,14 @@ void Config::loadConfig()
     // Load the config script
     if ((status = luaL_loadfile(L, CONFIG_FILE)) != LUA_OK)
     {
-        throw ConfigError("Config file not found");
+        throw ConfigError(lua_tostring(L, -1));
     }
 
     // Register config callbacks
     lua_register(L, "Logger", &logger);
     lua_register(L, "Nulldb", &nulldb);
     lua_register(L, "Plugin", &plugin);
+    lua_register(L, "Mongodb", &mongodb);
 
     // Run the config script
     if((status = lua_pcall(L, 0, 0, 0)) != LUA_OK)
@@ -157,6 +193,26 @@ bool Config::getLogTimestamp() const
 void Config::setPersistenceType(PersistenceType type)
 {
     persistenceType = type;
+}
+
+std::string& Config::getMongoUrl()
+{
+    return mongoUrl;
+}
+
+void Config::setMongoUrl(const char *url)
+{
+    mongoUrl = url;
+}
+
+int Config::getMongoPort()
+{
+    return mongoPort;
+}
+
+void Config::setMongoPort(int port)
+{
+    mongoPort = port;
 }
 
 PersistenceType Config::getPersistenceType()
