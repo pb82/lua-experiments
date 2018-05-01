@@ -3,6 +3,7 @@
 
 #include <mongoc.h>
 #include <sstream>
+#include <mutex>
 
 #include "persistence.h"
 #include "config.h"
@@ -33,6 +34,7 @@ private:
     mongoc_collection_t *collection;
 
     Logger *logger;
+    static std::mutex _lock;
 };
 
 #endif // MONGOADAPTER_H

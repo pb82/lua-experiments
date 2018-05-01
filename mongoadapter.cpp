@@ -1,5 +1,7 @@
 #include "mongoadapter.h"
 
+std::mutex MongoAdapter::_lock;
+
 MongoAdapter::MongoAdapter(Config& config, Logger *logger) : logger(logger)
 {
     this->mongoUrl = config.getMongoUrl();
@@ -36,6 +38,8 @@ void MongoAdapter::init()
 
 void MongoAdapter::addAction(std::string name, std::string bytecode, int timeout, int maxmem)
 {
+    std::lock_guard<std::mutex> lock(_lock);
+
     bson_oid_t oid;
     bson_error_t error;
     bson_t *doc = bson_new();
@@ -56,6 +60,8 @@ void MongoAdapter::addAction(std::string name, std::string bytecode, int timeout
 
 const ActionDefinition MongoAdapter::getAction(std::string name)
 {
+    std::lock_guard<std::mutex> lock(_lock);
+
     const bson_t *doc;
     bson_t *query = bson_new();
     BSON_APPEND_UTF8(query, "name", name.c_str());
@@ -101,6 +107,8 @@ const ActionDefinition MongoAdapter::getAction(std::string name)
 
 bool MongoAdapter::hasAction(std::string name)
 {
+    std::lock_guard<std::mutex> lock(_lock);
+
     bson_t *query = bson_new();
     bson_error_t error;
     BSON_APPEND_UTF8(query, "name", name.c_str());
@@ -109,6 +117,7 @@ bool MongoAdapter::hasAction(std::string name)
                                         query, 0, 0, nullptr, &error);
 
     bson_destroy(query);
+
     if (count < 0)
     {
         logger->error("Mongodb error: %s", error.message);
@@ -120,6 +129,8 @@ bool MongoAdapter::hasAction(std::string name)
 
 void MongoAdapter::getActions(std::vector<ActionDefinition> &list)
 {
+    std::lock_guard<std::mutex> lock(_lock);
+
     const bson_t *doc;
     bson_t *query = bson_new();
     mongoc_cursor_t *cursor = mongoc_collection_find_with_opts(collection, query, nullptr, nullptr);
@@ -155,6 +166,8 @@ void MongoAdapter::getActions(std::vector<ActionDefinition> &list)
 
 void MongoAdapter::deleteAction(std::string &name)
 {
+    std::lock_guard<std::mutex> lock(_lock);
+
     bson_t *query = bson_new();
     bson_error_t error;
     BSON_APPEND_UTF8(query, "name", name.c_str());
