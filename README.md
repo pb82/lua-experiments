@@ -101,7 +101,7 @@ info: Operation successful
 Hello from Lua
 ```
 
-The payload is transformed to a Lua table and passed to the `main` function as `args`. The `-b` flag means 'block`. Use it to wait until the result is received.
+The payload is transformed to a Lua table and passed to the `main` function as `args`. The `-b` flag means `block`. Use it to wait until the result is received.
 If you run the command without the `-b` flag you will get an `invocation ID`:
 
 ```sh
